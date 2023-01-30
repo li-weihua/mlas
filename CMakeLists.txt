@@ -17,13 +17,11 @@ set(mlas_common_srcs
   ${MLAS_SRC_DIR}/platform.cpp
   ${MLAS_SRC_DIR}/sgemm.cpp
   ${MLAS_SRC_DIR}/transpose.cpp
-  ${MLAS_SRC_DIR}/compute.cpp
   ${MLAS_SRC_DIR}/threading.cpp
 )
 
 # only build for linux
 set(mlas_platform_srcs_sse2
-  ${MLAS_SRC_DIR}/x86_64/DgemmKernelSse2.S
   ${MLAS_SRC_DIR}/x86_64/SgemmKernelSse2.S
   ${MLAS_SRC_DIR}/x86_64/SgemmTransposePackB16x4Sse2.S
   ${MLAS_SRC_DIR}/x86_64/SconvKernelSse2.S
@@ -41,7 +39,6 @@ set_source_files_properties(${mlas_platform_srcs_avx} PROPERTIES COMPILE_FLAGS "
 
 set(mlas_platform_srcs_avx2
   ${MLAS_SRC_DIR}/x86_64/SgemmKernelFma3.S
-  ${MLAS_SRC_DIR}/x86_64/TransKernelFma3.S
 )
 set_source_files_properties(${mlas_platform_srcs_avx2} PROPERTIES COMPILE_FLAGS "-mavx2 -mfma")
 

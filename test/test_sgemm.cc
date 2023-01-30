@@ -45,8 +45,8 @@ void sgemm_ref(float* A, float* B, float* C, int m, int n, int k) {
 
 int main() {
   int m = 100;
-  int n = 100;
-  int k = 100;
+  int n = 90;
+  int k = 60;
 
   float* A = (float*)std::malloc(sizeof(float) * m * k);
   float* B = (float*)std::malloc(sizeof(float) * k * n);
