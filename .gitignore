@@ -1,0 +1,7 @@
+*.swp
+*.obj
+*.lib
+*.dll
+*.o
+*.a
+*.so
