@@ -147,42 +147,6 @@ MlasReadExtendedControlRegister(
 #endif
 }
 
-#if defined(__linux__)
-#include <sys/syscall.h>
-#endif
-
-bool MlasInitAMX() {
-  /*
-#if defined(__linux__)
-#define XFEATURE_XTILECFG 17
-#define XFEATURE_XTILEDATA 18
-#define XFEATURE_MASK_XTILECFG (1 << XFEATURE_XTILECFG)
-#define XFEATURE_MASK_XTILEDATA (1 << XFEATURE_XTILEDATA)
-#define XFEATURE_MASK_XTILE (XFEATURE_MASK_XTILECFG | XFEATURE_MASK_XTILEDATA)
-
-#define ARCH_GET_XCOMP_PERM 0x1022
-#define ARCH_REQ_XCOMP_PERM 0x1023
-
-    unsigned long bitmask = 0;
-    long rc = syscall(SYS_arch_prctl, ARCH_REQ_XCOMP_PERM, XFEATURE_XTILEDATA);
-    if (rc) {
-        return false;
-    }
-    rc = syscall(SYS_arch_prctl, ARCH_GET_XCOMP_PERM, &bitmask);
-    if (rc) {
-        return false;
-    }
-    if (bitmask & XFEATURE_MASK_XTILE) {
-        return true;
-    }
-    return false;
-#else
-    return true;
-#endif
-*/
-  return false;
-}
-
 #endif  // MLAS_TARGET_AMD64_IX86
 
 MLAS_PLATFORM::MLAS_PLATFORM(
@@ -298,27 +262,6 @@ Return Value:
 
 #if !defined(ORT_MINIMAL_BUILD)
 
-        //
-        // Check if the processor supports AVX512F features and the
-        // operating system supports saving AVX512F state.
-        //
-
-        if (((Cpuid7[1] & 0x10000) != 0) && ((xcr0 & 0xE0) == 0xE0)) {
-          //
-          // Check if the processor supports AVX512 core features
-          // (AVX512BW/AVX512DQ/AVX512VL).
-          //
-
-          if ((Cpuid7[1] & 0xC0020000) == 0xC0020000) {
-            //
-            // Check if the processor supports AVX512VNNI.
-            //
-
-            if ((Cpuid7[2] & 0x800) != 0) {
-            }
-          }
-        }
-
 #ifdef MLAS_AMX_SUPPORTED
         //
         // Check if the processor supports AMX-TILE and AMX-INT8
@@ -370,35 +313,6 @@ Return Value:
   }
 
 #endif  // MLAS_TARGET_ARM64
-#if defined(MLAS_TARGET_POWER)
-  this->GemmFloatKernel = MlasSgemmKernel;
-  this->GemmDoubleKernel = MlasDgemmKernel;
-  this->QuantizeLinearS8Kernel = MlasQuantizeLinearS8Kernel;
-  this->QuantizeLinearU8Kernel = MlasQuantizeLinearU8Kernel;
-
-#if defined(__linux__)
-  unsigned long hwcap2 = getauxval(AT_HWCAP2);
-
-  bool HasP9Instructions = hwcap2 & PPC_FEATURE2_ARCH_3_00;
-  if (HasP9Instructions) {
-    this->QuantizeLinearS8Kernel = MlasQuantizeLinearS8KernelVSX;
-    this->QuantizeLinearU8Kernel = MlasQuantizeLinearU8KernelVSX;
-  }
-
-#if defined(POWER10)
-#if (defined(__GNUC__) && ((__GNUC__ > 10) || (__GNUC__ == 10 && __GNUC_MINOR__ >= 2))) || \
-    (defined(__clang__) && (__clang_major__ >= 12))
-  bool HasP10Instructions = ((hwcap2 & PPC_FEATURE2_MMA) && (hwcap2 & PPC_FEATURE2_ARCH_3_1));
-  if (HasP10Instructions) {
-    this->GemmFloatKernel = MlasSgemmKernelPOWER10;
-    this->GemmDoubleKernel = MlasDgemmKernelPOWER10;
-    this->GemmU8X8Dispatch = &MlasGemm8X8DispatchPOWER10;
-  }
-#endif
-#endif
-
-#endif  // __linux__
-#endif  // MLAS_TARGET_POWER
 }
 
 size_t
