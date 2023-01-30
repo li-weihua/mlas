@@ -73,7 +73,7 @@ Abstract:
 // Define the support levels for the target architecture.
 //
 
-#if defined(MLAS_TARGET_AMD64) || defined (MLAS_TARGET_POWER)
+#if defined(MLAS_TARGET_AMD64) || defined(MLAS_TARGET_POWER)
 #define MLAS_SUPPORTS_GEMM_DOUBLE
 #endif
 
@@ -83,10 +83,15 @@ Abstract:
 
 #ifndef CBLAS_ENUM_DEFINED_H
 #define CBLAS_ENUM_DEFINED_H
-typedef enum { CblasNoTrans=111, CblasTrans=112, CblasConjTrans=113 } CBLAS_TRANSPOSE;
-typedef enum { CblasUpper=121, CblasLower=122 } CBLAS_UPLO;
-typedef enum { CblasNonUnit=131, CblasUnit=132 } CBLAS_DIAG;
-typedef enum { CblasLeft=141, CblasRight=142} CBLAS_SIDE;
+typedef enum { CblasNoTrans = 111,
+               CblasTrans = 112,
+               CblasConjTrans = 113 } CBLAS_TRANSPOSE;
+typedef enum { CblasUpper = 121,
+               CblasLower = 122 } CBLAS_UPLO;
+typedef enum { CblasNonUnit = 131,
+               CblasUnit = 132 } CBLAS_DIAG;
+typedef enum { CblasLeft = 141,
+               CblasRight = 142 } CBLAS_SIDE;
 #endif
 
 //
@@ -97,10 +102,10 @@ typedef enum { CblasLeft=141, CblasRight=142} CBLAS_SIDE;
 //
 
 namespace onnxruntime {
-    namespace concurrency {
-        class ThreadPool;
-    };
+namespace concurrency {
+class ThreadPool;
 };
+};  // namespace onnxruntime
 
 using MLAS_THREADPOOL = onnxruntime::concurrency::ThreadPool;
 
@@ -109,10 +114,9 @@ using MLAS_THREADPOOL = onnxruntime::concurrency::ThreadPool;
 //
 
 size_t
-MLASCALL
-MlasGetPreferredBufferAlignment(
-    void
-    );
+    MLASCALL
+    MlasGetPreferredBufferAlignment(
+        void);
 
 #ifdef MLAS_TARGET_AMD64_IX86
 
@@ -122,56 +126,53 @@ MlasGetPreferredBufferAlignment(
  * https://www.intel.com/content/www/us/en/develop/documentation/onednn-developer-guide-and-reference/top/advanced-topics/nuances-of-int8-computations.html
 */
 bool
-MLASCALL
-MlasPlatformU8S8Overflow(
-    void
-    );
+    MLASCALL
+    MlasPlatformU8S8Overflow(
+        void);
 
 #endif
-
 
 //
 // Activation routines.
 //
 
 enum MLAS_ACTIVATION_KIND {
-    MlasIdentityActivation,
-    MlasReluActivation,
-    MlasLeakyReluActivation,
-    MlasTanhActivation,
-    MlasLogisticActivation,
-    MlasClipActivation,
-    MlasHardSigmoidActivation,
+  MlasIdentityActivation,
+  MlasReluActivation,
+  MlasLeakyReluActivation,
+  MlasTanhActivation,
+  MlasLogisticActivation,
+  MlasClipActivation,
+  MlasHardSigmoidActivation,
 };
 
 struct MLAS_ACTIVATION {
-    MLAS_ACTIVATION_KIND ActivationKind;
-    union {
-        struct {
-            float alpha;
-        } LeakyRelu;
-        struct {
-            float minimum;
-            float maximum;
-        } Clip;
-        struct {
-            float alpha;
-            float beta;
-        } HardSigmoid;
-        float Values[2];
-    } Parameters;
+  MLAS_ACTIVATION_KIND ActivationKind;
+  union {
+    struct {
+      float alpha;
+    } LeakyRelu;
+    struct {
+      float minimum;
+      float maximum;
+    } Clip;
+    struct {
+      float alpha;
+      float beta;
+    } HardSigmoid;
+    float Values[2];
+  } Parameters;
 };
 
 void
-MLASCALL
-MlasActivation(
-    const MLAS_ACTIVATION* Activation,
-    float* Buffer,
-    const float* Bias,
-    size_t M,
-    size_t N,
-    size_t ldc
-    );
+    MLASCALL
+    MlasActivation(
+        const MLAS_ACTIVATION* Activation,
+        float* Buffer,
+        const float* Bias,
+        size_t M,
+        size_t N,
+        size_t ldc);
 
 //
 // Matrix/matrix multiply routines.
@@ -183,15 +184,15 @@ MlasActivation(
  * @brief Supply matrices data information to single precision gemm functions
  */
 struct MLAS_SGEMM_DATA_PARAMS {
-    const float* A = nullptr; /**< Supplies the address of matrix A */
-    size_t lda = 0;           /**< Supplies the first dimension of matrix A. */
-    const float* B = nullptr; /**< Supplies the address of matrix B */
-    size_t ldb = 0;           /**< Supplies the first dimension of matrix B. */
-    float* C = nullptr;       /**< Supplies the address of matrix C */
-    size_t ldc = 0;           /**< Supplies the first dimension of matrix C. */
-    float alpha = 1.0f;       /**< Supplies the scalar alpha multiplier (see SGEMM definition) */
-    float beta = 0.0f;        /**< Supplies the scalar beta multiplier (see SGEMM definition) */
-    bool BIsPacked = false;   /**< Whether B is pre-packed */
+  const float* A = nullptr; /**< Supplies the address of matrix A */
+  size_t lda = 0;           /**< Supplies the first dimension of matrix A. */
+  const float* B = nullptr; /**< Supplies the address of matrix B */
+  size_t ldb = 0;           /**< Supplies the first dimension of matrix B. */
+  float* C = nullptr;       /**< Supplies the address of matrix C */
+  size_t ldc = 0;           /**< Supplies the first dimension of matrix C. */
+  float alpha = 1.0f;       /**< Supplies the scalar alpha multiplier (see SGEMM definition) */
+  float beta = 0.0f;        /**< Supplies the scalar beta multiplier (see SGEMM definition) */
+  bool BIsPacked = false;   /**< Whether B is pre-packed */
 };
 
 /**
@@ -209,17 +210,16 @@ struct MLAS_SGEMM_DATA_PARAMS {
                      base library threading support should be used.
  */
 void
-MLASCALL
-MlasGemmBatch(
-    CBLAS_TRANSPOSE TransA,
-    CBLAS_TRANSPOSE TransB,
-    size_t M,
-    size_t N,
-    size_t K,
-    const MLAS_SGEMM_DATA_PARAMS* Data,
-    size_t BatchSize,
-    MLAS_THREADPOOL* ThreadPool
-    );
+    MLASCALL
+    MlasGemmBatch(
+        CBLAS_TRANSPOSE TransA,
+        CBLAS_TRANSPOSE TransB,
+        size_t M,
+        size_t N,
+        size_t K,
+        const MLAS_SGEMM_DATA_PARAMS* Data,
+        size_t BatchSize,
+        MLAS_THREADPOOL* ThreadPool);
 
 /**
  * @brief  Single precision matrix/matrix multiply operation (SGEMM)
@@ -234,8 +234,7 @@ MlasGemmBatch(
  * @param ThreadPool  Supplies the thread pool object to use, else nullptr if the
                       base library threading support should be used.
  */
-inline
-void
+inline void
 MlasGemm(
     CBLAS_TRANSPOSE TransA,
     CBLAS_TRANSPOSE TransB,
@@ -243,10 +242,8 @@ MlasGemm(
     size_t N,
     size_t K,
     const MLAS_SGEMM_DATA_PARAMS& Data,
-    MLAS_THREADPOOL* ThreadPool
-    )
-{
-    MlasGemmBatch(TransA, TransB, M, N, K, &Data, 1, ThreadPool);
+    MLAS_THREADPOOL* ThreadPool) {
+  MlasGemmBatch(TransA, TransB, M, N, K, &Data, 1, ThreadPool);
 }
 
 /**
@@ -269,8 +266,7 @@ MlasGemm(
  * @param ThreadPool Supplies the thread pool object to use, else nullptr if the
                       base library threading support should be used.
  */
-inline
-void
+inline void
 MlasGemm(
     CBLAS_TRANSPOSE TransA,
     CBLAS_TRANSPOSE TransB,
@@ -285,20 +281,18 @@ MlasGemm(
     float beta,
     float* C,
     size_t ldc,
-    MLAS_THREADPOOL* ThreadPool
-    )
-{
-    MLAS_SGEMM_DATA_PARAMS Data;
-    Data.alpha = alpha;
-    Data.A = A;
-    Data.lda = lda;
-    Data.B = B;
-    Data.ldb = ldb;
-    Data.beta = beta;
-    Data.C = C;
-    Data.ldc = ldc;
+    MLAS_THREADPOOL* ThreadPool) {
+  MLAS_SGEMM_DATA_PARAMS Data;
+  Data.alpha = alpha;
+  Data.A = A;
+  Data.lda = lda;
+  Data.B = B;
+  Data.ldb = ldb;
+  Data.beta = beta;
+  Data.C = C;
+  Data.ldc = ldc;
 
-    MlasGemm(TransA, TransB, M, N, K, Data, ThreadPool);
+  MlasGemm(TransA, TransB, M, N, K, Data, ThreadPool);
 }
 
 /**
@@ -319,8 +313,7 @@ MlasGemm(
  * @param ThreadPool  - Supplies the thread pool object to use, else nullptr if the
                         base library threading support should be used.
  */
-inline
-void
+inline void
 MlasGemm(
     CBLAS_TRANSPOSE TransA,
     size_t M,
@@ -333,37 +326,35 @@ MlasGemm(
     float beta,
     float* C,
     size_t ldc,
-    MLAS_THREADPOOL* ThreadPool
-    )
-{
-    MLAS_SGEMM_DATA_PARAMS DataParams;
-    DataParams.A = A;
-    DataParams.lda = lda;
-    DataParams.B = static_cast<const float*>(PackedB);
-    DataParams.ldb = 0;
-    DataParams.C = C;
-    DataParams.ldc = ldc;
-    DataParams.alpha = alpha;
-    DataParams.beta = beta;
-    DataParams.BIsPacked = true;
+    MLAS_THREADPOOL* ThreadPool) {
+  MLAS_SGEMM_DATA_PARAMS DataParams;
+  DataParams.A = A;
+  DataParams.lda = lda;
+  DataParams.B = static_cast<const float*>(PackedB);
+  DataParams.ldb = 0;
+  DataParams.C = C;
+  DataParams.ldc = ldc;
+  DataParams.alpha = alpha;
+  DataParams.beta = beta;
+  DataParams.BIsPacked = true;
 
-    MlasGemmBatch(TransA,
-                  CblasTrans,  // deos not matter when B is packed
-                  M, N, K, &DataParams, 1, ThreadPool);
+  MlasGemmBatch(TransA,
+                CblasTrans,  // deos not matter when B is packed
+                M, N, K, &DataParams, 1, ThreadPool);
 }
 
 /**
  * @brief Supply matrices data information to double precision gemm functions
  */
 struct MLAS_DGEMM_DATA_PARAMS {
-    const double* A = nullptr; /**< Supplies the address of matrix A */
-    size_t lda = 0;            /**< Supplies the first dimension of matrix A. */
-    const double* B = nullptr; /**< Supplies the address of matrix B */
-    size_t ldb = 0;            /**< Supplies the first dimension of matrix B. */
-    double* C = nullptr;       /**< Supplies the address of matrix C */
-    size_t ldc = 0;            /**< Supplies the first dimension of matrix C. */
-    double alpha = 1.0;        /**< Supplies the scalar alpha multiplier (see SGEMM definition) */
-    double beta = 0.0;         /**< Supplies the scalar beta multiplier (see SGEMM definition) */
+  const double* A = nullptr; /**< Supplies the address of matrix A */
+  size_t lda = 0;            /**< Supplies the first dimension of matrix A. */
+  const double* B = nullptr; /**< Supplies the address of matrix B */
+  size_t ldb = 0;            /**< Supplies the first dimension of matrix B. */
+  double* C = nullptr;       /**< Supplies the address of matrix C */
+  size_t ldc = 0;            /**< Supplies the first dimension of matrix C. */
+  double alpha = 1.0;        /**< Supplies the scalar alpha multiplier (see SGEMM definition) */
+  double beta = 0.0;         /**< Supplies the scalar beta multiplier (see SGEMM definition) */
 };
 
 /**
@@ -381,17 +372,16 @@ struct MLAS_DGEMM_DATA_PARAMS {
                      base library threading support should be used.
  */
 void
-MLASCALL
-MlasGemmBatch(
-    CBLAS_TRANSPOSE TransA,
-    CBLAS_TRANSPOSE TransB,
-    size_t M,
-    size_t N,
-    size_t K,
-    const MLAS_DGEMM_DATA_PARAMS* Data,
-    size_t BatchSize,
-    MLAS_THREADPOOL* ThreadPool
-    );
+    MLASCALL
+    MlasGemmBatch(
+        CBLAS_TRANSPOSE TransA,
+        CBLAS_TRANSPOSE TransB,
+        size_t M,
+        size_t N,
+        size_t K,
+        const MLAS_DGEMM_DATA_PARAMS* Data,
+        size_t BatchSize,
+        MLAS_THREADPOOL* ThreadPool);
 
 /**
  * @brief  Double precision matrix/matrix multiply operation (DGEMM)
@@ -406,8 +396,7 @@ MlasGemmBatch(
  * @param ThreadPool  Supplies the thread pool object to use, else nullptr if the
                       base library threading support should be used.
  */
-inline
-void
+inline void
 MlasGemm(
     CBLAS_TRANSPOSE TransA,
     CBLAS_TRANSPOSE TransB,
@@ -415,10 +404,8 @@ MlasGemm(
     size_t N,
     size_t K,
     const MLAS_DGEMM_DATA_PARAMS& Data,
-    MLAS_THREADPOOL* ThreadPool
-    )
-{
-    MlasGemmBatch(TransA, TransB, M, N, K, &Data, 1, ThreadPool);
+    MLAS_THREADPOOL* ThreadPool) {
+  MlasGemmBatch(TransA, TransB, M, N, K, &Data, 1, ThreadPool);
 }
 
 /**
@@ -441,8 +428,7 @@ MlasGemm(
  * @param ThreadPool Supplies the thread pool object to use, else nullptr if the
                       base library threading support should be used.
  */
-inline
-void
+inline void
 MlasGemm(
     CBLAS_TRANSPOSE TransA,
     CBLAS_TRANSPOSE TransB,
@@ -457,95 +443,87 @@ MlasGemm(
     double beta,
     double* C,
     size_t ldc,
-    MLAS_THREADPOOL* ThreadPool
-    )
-{
-    MLAS_DGEMM_DATA_PARAMS Data;
-    Data.alpha = alpha;
-    Data.A = A;
-    Data.lda = lda;
-    Data.B = B;
-    Data.ldb = ldb;
-    Data.beta = beta;
-    Data.C = C;
-    Data.ldc = ldc;
-    MlasGemmBatch(TransA, TransB, M, N, K, &Data, 1, ThreadPool);
+    MLAS_THREADPOOL* ThreadPool) {
+  MLAS_DGEMM_DATA_PARAMS Data;
+  Data.alpha = alpha;
+  Data.A = A;
+  Data.lda = lda;
+  Data.B = B;
+  Data.ldb = ldb;
+  Data.beta = beta;
+  Data.C = C;
+  Data.ldc = ldc;
+  MlasGemmBatch(TransA, TransB, M, N, K, &Data, 1, ThreadPool);
 }
 
 enum class MLAS_QUANTIZATION_GRANULARITY {
-    PerMatrix,
-    PerColumn,
+  PerMatrix,
+  PerColumn,
 };
 
 enum class MLAS_QGEMM_OUTPUT_MODE {
-    ZeroMode,       // overwrite the output buffer
-    AccumulateMode, // accumulate to the output buffer
+  ZeroMode,        // overwrite the output buffer
+  AccumulateMode,  // accumulate to the output buffer
 };
 
 class MLAS_QGEMM_OUTPUT_PROCESSOR {
-public:
-    virtual
-    void
-    Process(
-        const int32_t*, // Supplies the address of matrix to process
-        size_t,         // Supplies the start row index of matrix
-        size_t,         // Supplies the start col index of matrix
-        size_t,         // Supplies the element count per row to process
-        size_t,         // Supplies the element count per col to process
-        size_t          // Supplies the leading dimension of matrix
-        ) const = 0;
+ public:
+  virtual void
+  Process(
+      const int32_t*,  // Supplies the address of matrix to process
+      size_t,          // Supplies the start row index of matrix
+      size_t,          // Supplies the start col index of matrix
+      size_t,          // Supplies the element count per row to process
+      size_t,          // Supplies the element count per col to process
+      size_t           // Supplies the leading dimension of matrix
+      ) const = 0;
 
-    virtual ~MLAS_QGEMM_OUTPUT_PROCESSOR() {}
+  virtual ~MLAS_QGEMM_OUTPUT_PROCESSOR() {}
 };
 
 class MLAS_QGEMM_SCALE_BIAS_OUTPUT_PROCESSOR : public MLAS_QGEMM_OUTPUT_PROCESSOR {
-public:
-    MLAS_QGEMM_SCALE_BIAS_OUTPUT_PROCESSOR(
-        float* Output,
-        size_t LeadingDimensionOutput,
-        const float* Scale,
-        const float* Bias,
-        MLAS_QGEMM_OUTPUT_MODE Mode = MLAS_QGEMM_OUTPUT_MODE::ZeroMode,
-        MLAS_QUANTIZATION_GRANULARITY QuantGran = MLAS_QUANTIZATION_GRANULARITY::PerMatrix) :
-            Output_(Output),
-            LeadingDimensionOutput_(LeadingDimensionOutput),
-            Scale_(Scale),
-            Bias_(Bias),
-            OutputMode_(Mode),
-            QuantGran_(QuantGran)
-    {
-    }
+ public:
+  MLAS_QGEMM_SCALE_BIAS_OUTPUT_PROCESSOR(
+      float* Output,
+      size_t LeadingDimensionOutput,
+      const float* Scale,
+      const float* Bias,
+      MLAS_QGEMM_OUTPUT_MODE Mode = MLAS_QGEMM_OUTPUT_MODE::ZeroMode,
+      MLAS_QUANTIZATION_GRANULARITY QuantGran = MLAS_QUANTIZATION_GRANULARITY::PerMatrix) : Output_(Output),
+                                                                                            LeadingDimensionOutput_(LeadingDimensionOutput),
+                                                                                            Scale_(Scale),
+                                                                                            Bias_(Bias),
+                                                                                            OutputMode_(Mode),
+                                                                                            QuantGran_(QuantGran) {
+  }
 
-    void
-    Process(
-        const int32_t* C,
-        size_t StartM,
-        size_t StartN,
-        size_t CountM,
-        size_t CountN,
-        size_t ldc
-        ) const override;
+  void
+  Process(
+      const int32_t* C,
+      size_t StartM,
+      size_t StartN,
+      size_t CountM,
+      size_t CountN,
+      size_t ldc) const override;
 
-private:
-    template<bool HasBias, MLAS_QGEMM_OUTPUT_MODE Mode, MLAS_QUANTIZATION_GRANULARITY QuantGran>
-    inline
-    void
-    ProcessImpl(
-        const int32_t* C,
-        size_t StartM,
-        size_t StartN,
-        size_t CountM,
-        size_t CountN,
-        size_t ldc
-        ) const;
+ private:
+  template <bool HasBias, MLAS_QGEMM_OUTPUT_MODE Mode, MLAS_QUANTIZATION_GRANULARITY QuantGran>
+  inline void
+  ProcessImpl(
+      const int32_t* C,
+      size_t StartM,
+      size_t StartN,
+      size_t CountM,
+      size_t CountN,
+      size_t ldc) const;
 
-private:
-    float* Output_;
-    size_t LeadingDimensionOutput_;
-    const float* Scale_;
-    const float* Bias_;
-    MLAS_QGEMM_OUTPUT_MODE OutputMode_;
-    MLAS_QUANTIZATION_GRANULARITY QuantGran_;
+ private:
+  float* Output_;
+  size_t LeadingDimensionOutput_;
+  const float* Scale_;
+  const float* Bias_;
+  MLAS_QGEMM_OUTPUT_MODE OutputMode_;
+  MLAS_QUANTIZATION_GRANULARITY QuantGran_;
 };
 
 /**
@@ -556,26 +534,26 @@ private:
  *
 */
 struct MLAS_GEMM_QUANT_SHAPE_PARAMS {
-    size_t M = 0;                  /**< Supplies the row size of matrix A */
-    size_t N = 0;                  /**< Supplies the column size of matrix B */
-    size_t K = 0;                  /**< Supplies the column size of matrix A and row size of matrix B */
-    bool AIsSigned = false;        /**< Indicates whether type of A is int8_t or uint8_t.*/
-    bool BIsSigned = false;        /**< Indicates whether type of B is int8_t or uint8_t */
-    bool IsAccumulateMode = false; /**< Indicates whether to accumulate to matrix C or override matrix C */
+  size_t M = 0;                  /**< Supplies the row size of matrix A */
+  size_t N = 0;                  /**< Supplies the column size of matrix B */
+  size_t K = 0;                  /**< Supplies the column size of matrix A and row size of matrix B */
+  bool AIsSigned = false;        /**< Indicates whether type of A is int8_t or uint8_t.*/
+  bool BIsSigned = false;        /**< Indicates whether type of B is int8_t or uint8_t */
+  bool IsAccumulateMode = false; /**< Indicates whether to accumulate to matrix C or override matrix C */
 };
 
 struct MLAS_GEMM_QUANT_DATA_PARAMS {
-    const uint8_t* A = nullptr;
-    size_t lda = 0;
-    uint8_t ZeroPointA = 0;
-    const void* B = 0;
-    size_t ldb = 0;
-    const uint8_t* ZeroPointB = nullptr;
-    bool BIsPacked = false;
-    bool PerColumnZeroPoints = false;
-    int32_t* C = nullptr;
-    size_t ldc = 0;
-    const MLAS_QGEMM_OUTPUT_PROCESSOR* OutputProcessor = nullptr;
+  const uint8_t* A = nullptr;
+  size_t lda = 0;
+  uint8_t ZeroPointA = 0;
+  const void* B = 0;
+  size_t ldb = 0;
+  const uint8_t* ZeroPointB = nullptr;
+  bool BIsPacked = false;
+  bool PerColumnZeroPoints = false;
+  int32_t* C = nullptr;
+  size_t ldc = 0;
+  const MLAS_QGEMM_OUTPUT_PROCESSOR* OutputProcessor = nullptr;
 };
 
 /**
@@ -590,22 +568,19 @@ struct MLAS_GEMM_QUANT_DATA_PARAMS {
  * @param [IN]  ThreadPool   optional thread pool for parallel processing
  */
 void
-MLASCALL
-MlasGemmBatch(
-    const MLAS_GEMM_QUANT_SHAPE_PARAMS& Shape,
-    const MLAS_GEMM_QUANT_DATA_PARAMS* DataParams,
-    const size_t BatchN,
-    MLAS_THREADPOOL* ThreadPool
-    );
+    MLASCALL
+    MlasGemmBatch(
+        const MLAS_GEMM_QUANT_SHAPE_PARAMS& Shape,
+        const MLAS_GEMM_QUANT_DATA_PARAMS* DataParams,
+        const size_t BatchN,
+        MLAS_THREADPOOL* ThreadPool);
 
-inline
-void
+inline void
 MlasGemm(
-    const MLAS_GEMM_QUANT_SHAPE_PARAMS &Shape,
-    const MLAS_GEMM_QUANT_DATA_PARAMS &DataParams,
-    MLAS_THREADPOOL *ThreadPool)
-{
-    MlasGemmBatch(Shape, &DataParams, 1, ThreadPool);
+    const MLAS_GEMM_QUANT_SHAPE_PARAMS& Shape,
+    const MLAS_GEMM_QUANT_DATA_PARAMS& DataParams,
+    MLAS_THREADPOOL* ThreadPool) {
+  MlasGemmBatch(Shape, &DataParams, 1, ThreadPool);
 }
 
 //
@@ -624,12 +599,12 @@ constexpr size_t MLAS_SYMM_QGEMM_BUF_OVERRUN = 0;
  *        pre-packed, with column sums scaled by (-ZeroPointA)
 */
 struct MLAS_SYMM_QGEMM_DATA_PARAMS {
-    const void* A = nullptr;
-    size_t lda = 0;
-    const void* B = 0;
-    void* C = nullptr;
-    size_t ldc = 0;
-    // TODO!! add re-quantization parameters
+  const void* A = nullptr;
+  size_t lda = 0;
+  const void* B = 0;
+  void* C = nullptr;
+  size_t ldc = 0;
+  // TODO!! add re-quantization parameters
 };
 
 /**
@@ -645,57 +620,51 @@ struct MLAS_SYMM_QGEMM_DATA_PARAMS {
  * @param [IN] ThreadPool 
 */
 void
-MLASCALL
-MlasSymmQgemmBatch(
-    const MLAS_GEMM_QUANT_SHAPE_PARAMS& Shape,
-    const MLAS_SYMM_QGEMM_DATA_PARAMS* DataParams,
-    const size_t BatchN,
-    MLAS_THREADPOOL* ThreadPool
-    );
-
+    MLASCALL
+    MlasSymmQgemmBatch(
+        const MLAS_GEMM_QUANT_SHAPE_PARAMS& Shape,
+        const MLAS_SYMM_QGEMM_DATA_PARAMS* DataParams,
+        const size_t BatchN,
+        MLAS_THREADPOOL* ThreadPool);
 
 //
 // Buffer packing routines.
 //
 
 size_t
-MLASCALL
-MlasGemmPackBSize(
-    size_t N,
-    size_t K
-    );
+    MLASCALL
+    MlasGemmPackBSize(
+        size_t N,
+        size_t K);
 
 void
-MLASCALL
-MlasGemmPackB(
-    CBLAS_TRANSPOSE TransB,
-    size_t N,
-    size_t K,
-    const float* B,
-    size_t ldb,
-    void* PackedB
-    );
+    MLASCALL
+    MlasGemmPackB(
+        CBLAS_TRANSPOSE TransB,
+        size_t N,
+        size_t K,
+        const float* B,
+        size_t ldb,
+        void* PackedB);
 
 size_t
-MLASCALL
-MlasGemmPackBSize(
-    size_t N,
-    size_t K,
-    bool AIsSigned,
-    bool BIsSigned
-    );
+    MLASCALL
+    MlasGemmPackBSize(
+        size_t N,
+        size_t K,
+        bool AIsSigned,
+        bool BIsSigned);
 
 void
-MLASCALL
-MlasGemmPackB(
-    size_t N,
-    size_t K,
-    const uint8_t* B,
-    size_t ldb,
-    bool AIsSigned,
-    bool BIsSigned,
-    void* PackedB
-    );
+    MLASCALL
+    MlasGemmPackB(
+        size_t N,
+        size_t K,
+        const uint8_t* B,
+        size_t ldb,
+        bool AIsSigned,
+        bool BIsSigned,
+        void* PackedB);
 
 /**
  * @brief For symmetric quantized GEMM, returns size of the
@@ -707,66 +676,64 @@ MlasGemmPackB(
  *          0 if operation not supported
 */
 size_t
-MLASCALL
-MlasSymmQgemmPackBSize(
-    size_t N,
-    size_t K, 
-    bool AIsSigned
-    );
+    MLASCALL
+    MlasSymmQgemmPackBSize(
+        size_t N,
+        size_t K,
+        bool AIsSigned);
 
 void
-MLASCALL
-MlasSymmQgemmPackB(
-    size_t N,
-    size_t K,
-    const int8_t* B,
-    size_t ldb,
-    bool AIsSigned,
-    int32_t ZeroPointA,
-    void* PackedB
-    );
+    MLASCALL
+    MlasSymmQgemmPackB(
+        size_t N,
+        size_t K,
+        const int8_t* B,
+        size_t ldb,
+        bool AIsSigned,
+        int32_t ZeroPointA,
+        void* PackedB);
 
 //
 // Convolution routines.
 //
 
 enum MLAS_CONV_ALGORITHM {
-    MlasConvAlgorithmGemmDirect,
-    MlasConvAlgorithmExpandThenGemm,
-    MlasConvAlgorithmExpandThenGemmSegmented,
+  MlasConvAlgorithmGemmDirect,
+  MlasConvAlgorithmExpandThenGemm,
+  MlasConvAlgorithmExpandThenGemmSegmented,
 #if defined(MLAS_TARGET_WASM_SCALAR)
-    MlasConvAlgorithmDepthwise,
+  MlasConvAlgorithmDepthwise,
 #endif
 };
 
 struct MLAS_CONV_PARAMETERS {
-    const MLAS_ACTIVATION* Activation;
-    size_t Dimensions;
-    size_t BatchCount;
-    size_t GroupCount;
-    size_t InputChannels;
-    size_t InputShape[3];
-    size_t KernelShape[3];
-    size_t DilationShape[3];
-    size_t Padding[6];
-    size_t StrideShape[3];
-    size_t FilterCount;
-    size_t OutputShape[3];
-    size_t InputSize;
-    size_t OutputSize;
-    size_t K;
-    float Beta;
-    MLAS_CONV_ALGORITHM Algorithm;
-    ptrdiff_t ThreadCount;
-    union {
-        struct {
-            CBLAS_TRANSPOSE TransB;
-            size_t ldb;
-        } GemmDirect;
-        struct {
-            size_t ThreadStrideN;
-        } ExpandThenGemmSegmented;
-    } u;
+  const MLAS_ACTIVATION* Activation;
+  size_t Dimensions;
+  size_t BatchCount;
+  size_t GroupCount;
+  size_t InputChannels;
+  size_t InputShape[3];
+  size_t KernelShape[3];
+  size_t DilationShape[3];
+  size_t Padding[6];
+  size_t StrideShape[3];
+  size_t FilterCount;
+  size_t OutputShape[3];
+  size_t InputSize;
+  size_t OutputSize;
+  size_t K;
+  float Beta;
+  MLAS_CONV_ALGORITHM Algorithm;
+  ptrdiff_t ThreadCount;
+  union {
+    struct {
+      CBLAS_TRANSPOSE TransB;
+      size_t ldb;
+    } GemmDirect;
+    struct {
+      size_t ThreadStrideN;
+    } ExpandThenGemmSegmented;
+  } u;
 };
 
 void MLASCALL
@@ -788,31 +755,29 @@ MlasConvPrepare(MLAS_CONV_PARAMETERS* Parameters,
                 MLAS_THREADPOOL* ThreadPool);
 
 void
-MLASCALL
-MlasConv(
-    const MLAS_CONV_PARAMETERS* Parameters,
-    const float* Input,
-    const float* Filter,
-    const float* Bias,
-    float* WorkingBuffer,
-    float* Output,
-    MLAS_THREADPOOL* ThreadPool
-    );
+    MLASCALL
+    MlasConv(
+        const MLAS_CONV_PARAMETERS* Parameters,
+        const float* Input,
+        const float* Filter,
+        const float* Bias,
+        float* WorkingBuffer,
+        float* Output,
+        MLAS_THREADPOOL* ThreadPool);
 
 void
-MLASCALL
-MlasConvDepthwise(
-    const void* const* Input,
-    int32_t InputZeroPoint,
-    bool InputIsSigned,
-    const void* Filter,
-    int32_t FilterZeroPoint,
-    bool FilterIsSigned,
-    int32_t* Output,
-    size_t Channels,
-    size_t OutputCount,
-    size_t KernelSize
-    );
+    MLASCALL
+    MlasConvDepthwise(
+        const void* const* Input,
+        int32_t InputZeroPoint,
+        bool InputIsSigned,
+        const void* Filter,
+        int32_t FilterZeroPoint,
+        bool FilterIsSigned,
+        int32_t* Output,
+        size_t Channels,
+        size_t OutputCount,
+        size_t KernelSize);
 
 //
 // Symmetric quantized integer convolution routines.
@@ -824,11 +789,9 @@ MlasConvSymPackWSize(
     size_t InputChannels,
     size_t OutputChannels,
     size_t KernelSize,
-    bool InputIsSigned
-    );
+    bool InputIsSigned);
 
-void
-MlasConvSymPackW(
+void MlasConvSymPackW(
     size_t GroupCount,
     size_t InputChannels,
     size_t OutputChannels,
@@ -836,14 +799,12 @@ MlasConvSymPackW(
     const int8_t* W,
     int8_t* PackedW,
     size_t PackedWSize,
-    bool InputIsSigned
-    );
+    bool InputIsSigned);
 
 int32_t
 MlasConvSymFixupInputZeroPoint(
     int32_t zero_point_value,
-    bool InputIsSigned
-    );
+    bool InputIsSigned);
 
 //
 // Convolution operators (or maybe others in the future) need to do their
@@ -854,13 +815,11 @@ MlasConvSymFixupInputZeroPoint(
 
 int32_t
 MlasConvSymGetKernelOutputCount(
-    bool InputIsSigned
-    );
+    bool InputIsSigned);
 
 int32_t
 MlasConvSymDepthwiseGetKernelOutputCnt(
-    bool InputIsSigned
-    );
+    bool InputIsSigned);
 
 /**
  * @brief Returns the stride M of depthwise conv kernel
@@ -877,11 +836,9 @@ MlasConvSymDepthwiseGetKernelOutputCnt(
  * 
  * @return
 */
-inline
-int32_t
-MlasConvDepthwiseGetKernelOutputCnt()
-{
-    return 4;
+inline int32_t
+MlasConvDepthwiseGetKernelOutputCnt() {
+  return 4;
 }
 
 int32_t
@@ -890,479 +847,354 @@ MlasSymmQgemmGetKernelOutputCnt();
 int32_t
 MlasQgemmGetKernelOutputCnt(
     bool AIsSigned,
-    bool BIsSigned
-    );
-
+    bool BIsSigned);
 
 struct MLAS_CONV_SYM_PARAMS {
-    const void* InputDirect;
-    const void* const* InputIndirection;
-    const void* Filter;
-    void* Output;
-    size_t InputChannels;
-    size_t OutputChannels;
-    size_t OutputCount;
-    size_t KernelSize;
-    const int32_t* Bias;
-    const float* Scale;
-    bool PerChannelScale;
-    int32_t OutputZeroPoint;
-    bool InputIsSigned;
+  const void* InputDirect;
+  const void* const* InputIndirection;
+  const void* Filter;
+  void* Output;
+  size_t InputChannels;
+  size_t OutputChannels;
+  size_t OutputCount;
+  size_t KernelSize;
+  const int32_t* Bias;
+  const float* Scale;
+  bool PerChannelScale;
+  int32_t OutputZeroPoint;
+  bool InputIsSigned;
 };
 
-void
-MlasConvSym(
-    const MLAS_CONV_SYM_PARAMS& Params
-    );
+void MlasConvSym(
+    const MLAS_CONV_SYM_PARAMS& Params);
 
-void
-MlasConvSymDepthwise(
-    const MLAS_CONV_SYM_PARAMS& Params
-    );
+void MlasConvSymDepthwise(
+    const MLAS_CONV_SYM_PARAMS& Params);
 
 //
 // Pooling routines.
 //
 
 enum MLAS_POOLING_KIND {
-    MlasMaximumPooling,
-    MlasAveragePoolingExcludePad,
-    MlasAveragePoolingIncludePad,
-    MlasPoolingKindCount,
+  MlasMaximumPooling,
+  MlasAveragePoolingExcludePad,
+  MlasAveragePoolingIncludePad,
+  MlasPoolingKindCount,
 };
 
 void
-MLASCALL
-MlasPool(
-    MLAS_POOLING_KIND PoolingKind,
-    size_t Dimensions,
-    const int64_t* InputShape,
-    const int64_t* KernelShape,
-    const int64_t* Padding,
-    const int64_t* StrideShape,
-    const int64_t* OutputShape,
-    const float* Input,
-    float* Output,
-    MLAS_THREADPOOL* ThreadPool
-    );
+    MLASCALL
+    MlasPool(
+        MLAS_POOLING_KIND PoolingKind,
+        size_t Dimensions,
+        const int64_t* InputShape,
+        const int64_t* KernelShape,
+        const int64_t* Padding,
+        const int64_t* StrideShape,
+        const int64_t* OutputShape,
+        const float* Input,
+        float* Output,
+        MLAS_THREADPOOL* ThreadPool);
 
-template<typename T8Bits>
+template <typename T8Bits>
 void
-MLASCALL
-MlasMaximumPool(
-    const T8Bits* const* Input,
-    T8Bits* Output,
-    size_t Channels,
-    size_t OutputCount,
-    size_t KernelSize
-    );
+    MLASCALL
+    MlasMaximumPool(
+        const T8Bits* const* Input,
+        T8Bits* Output,
+        size_t Channels,
+        size_t OutputCount,
+        size_t KernelSize);
 
 //
 // Miscellaneous compute routines.
 //
 
 void
-MLASCALL
-MlasComputeErf(
-    const float* Input,
-    float* Output,
-    size_t N
-    );
+    MLASCALL
+    MlasComputeErf(
+        const float* Input,
+        float* Output,
+        size_t N);
 
 void
-MLASCALL
-MlasComputeExp(
-    const float* Input,
-    float* Output,
-    size_t N
-    );
+    MLASCALL
+    MlasComputeExp(
+        const float* Input,
+        float* Output,
+        size_t N);
 
 void
-MLASCALL
-MlasComputeLogistic(
-    const float* Input,
-    float* Output,
-    size_t N
-    );
+    MLASCALL
+    MlasComputeLogistic(
+        const float* Input,
+        float* Output,
+        size_t N);
 
 void
-MLASCALL
-MlasComputeSoftmax(
-    const float* Input,
-    float* Output,
-    size_t N,
-    size_t D,
-    bool LogSoftmax,
-    MLAS_THREADPOOL* ThreadPool
-    );
+    MLASCALL
+    MlasComputeSoftmax(
+        const float* Input,
+        float* Output,
+        size_t N,
+        size_t D,
+        bool LogSoftmax,
+        MLAS_THREADPOOL* ThreadPool);
 
 void
-MLASCALL
-MlasComputeTanh(
-    const float* Input,
-    float* Output,
-    size_t N
-    );
+    MLASCALL
+    MlasComputeTanh(
+        const float* Input,
+        float* Output,
+        size_t N);
 
 //
 // Half-precision floating-point routines.
 //
 
-extern "C"
-void
-MLASCALL
-MlasConvertHalfToFloatBuffer(
-    const unsigned short* Source,
-    float* Destination,
-    size_t Count
-    );
+extern "C" void
+    MLASCALL
+    MlasConvertHalfToFloatBuffer(
+        const unsigned short* Source,
+        float* Destination,
+        size_t Count);
 
 //
 // Transpose routines.
 //
 
 void
-MLASCALL
-MlasTranspose(
-    const uint8_t* Input,
-    uint8_t* Output,
-    size_t M,
-    size_t N
-    );
+    MLASCALL
+    MlasTranspose(
+        const uint8_t* Input,
+        uint8_t* Output,
+        size_t M,
+        size_t N);
 
 void
-MLASCALL
-MlasTranspose(
-    const int8_t* Input,
-    int8_t* Output,
-    size_t M,
-    size_t N
-    );
+    MLASCALL
+    MlasTranspose(
+        const int8_t* Input,
+        int8_t* Output,
+        size_t M,
+        size_t N);
 
 void
-MLASCALL
-MlasTranspose(
-    const uint32_t* Input,
-    uint32_t* Output,
-    size_t M,
-    size_t N
-    );
+    MLASCALL
+    MlasTranspose(
+        const uint32_t* Input,
+        uint32_t* Output,
+        size_t M,
+        size_t N);
 
 void
-MLASCALL
-MlasTranspose(
-    const float* Input,
-    float* Output,
-    size_t M,
-    size_t N
-    );
+    MLASCALL
+    MlasTranspose(
+        const float* Input,
+        float* Output,
+        size_t M,
+        size_t N);
 
 //
 // Buffer reordering routines.
 //
 
 void
-MLASCALL
-MlasReorderInputNchw(
-    const float* S,
-    float* D,
-    size_t InputChannels,
-    size_t InputSize
-    );
+    MLASCALL
+    MlasReorderInputNchw(
+        const float* S,
+        float* D,
+        size_t InputChannels,
+        size_t InputSize);
 
 void
-MLASCALL
-MlasReorderInputNhwc(
-    const float* S,
-    float* D,
-    size_t InputChannels,
-    size_t RowCount,
-    size_t FullRowCount
-    );
+    MLASCALL
+    MlasReorderInputNhwc(
+        const float* S,
+        float* D,
+        size_t InputChannels,
+        size_t RowCount,
+        size_t FullRowCount);
 
 void
-MLASCALL
-MlasReorderOutputNchw(
-    const int64_t* OutputShape,
-    const float* S,
-    float* D
-    );
+    MLASCALL
+    MlasReorderOutputNchw(
+        const int64_t* OutputShape,
+        const float* S,
+        float* D);
 
 void
-MLASCALL
-MlasReorderOutputNhwc(
-    const int64_t* OutputShape,
-    const float* S,
-    float* D
-    );
+    MLASCALL
+    MlasReorderOutputNhwc(
+        const int64_t* OutputShape,
+        const float* S,
+        float* D);
 
 void
-MLASCALL
-MlasReorderFilterOIHWBiBo(
-    const int64_t* FilterShape,
-    const float* S,
-    float* D
-    );
+    MLASCALL
+    MlasReorderFilterOIHWBiBo(
+        const int64_t* FilterShape,
+        const float* S,
+        float* D);
 
 void
-MLASCALL
-MlasReorderFilterOIHWBo(
-    const int64_t* FilterShape,
-    const float* S,
-    float* D
-    );
+    MLASCALL
+    MlasReorderFilterOIHWBo(
+        const int64_t* FilterShape,
+        const float* S,
+        float* D);
 
 //
 // Single precision NCHWc routines.
 //
 
 size_t
-MLASCALL
-MlasNchwcGetBlockSize(
-    void
-    );
+    MLASCALL
+    MlasNchwcGetBlockSize(
+        void);
 
 void
-MLASCALL
-MlasNchwcConv(
-    const int64_t* InputShape,
-    const int64_t* KernelShape,
-    const int64_t* DilationShape,
-    const int64_t* Padding,
-    const int64_t* StrideShape,
-    const int64_t* OutputShape,
-    size_t GroupCount,
-    const float* Input,
-    const float* Filter,
-    const float* Bias,
-    float* Output,
-    const MLAS_ACTIVATION* Activation,
-    bool ZeroMode,
-    MLAS_THREADPOOL* ThreadPool
-    );
+    MLASCALL
+    MlasNchwcConv(
+        const int64_t* InputShape,
+        const int64_t* KernelShape,
+        const int64_t* DilationShape,
+        const int64_t* Padding,
+        const int64_t* StrideShape,
+        const int64_t* OutputShape,
+        size_t GroupCount,
+        const float* Input,
+        const float* Filter,
+        const float* Bias,
+        float* Output,
+        const MLAS_ACTIVATION* Activation,
+        bool ZeroMode,
+        MLAS_THREADPOOL* ThreadPool);
 
 void
-MLASCALL
-MlasNchwcPool(
-    MLAS_POOLING_KIND PoolingKind,
-    const int64_t* InputShape,
-    const int64_t* KernelShape,
-    const int64_t* DilationShape,
-    const int64_t* Padding,
-    const int64_t* StrideShape,
-    const int64_t* OutputShape,
-    const float* Input,
-    float* Output,
-    MLAS_THREADPOOL* ThreadPool
-    );
+    MLASCALL
+    MlasNchwcPool(
+        MLAS_POOLING_KIND PoolingKind,
+        const int64_t* InputShape,
+        const int64_t* KernelShape,
+        const int64_t* DilationShape,
+        const int64_t* Padding,
+        const int64_t* StrideShape,
+        const int64_t* OutputShape,
+        const float* Input,
+        float* Output,
+        MLAS_THREADPOOL* ThreadPool);
 
 void
-MLASCALL
-MlasNchwcUpsampleNearest(
-    const int64_t* InputShape,
-    const int64_t* Scales,
-    const float* Input,
-    float* Output
-    );
+    MLASCALL
+    MlasNchwcUpsampleNearest(
+        const int64_t* InputShape,
+        const int64_t* Scales,
+        const float* Input,
+        float* Output);
 
 void
-MLASCALL
-MlasNchwcUpsampleLinear(
-    size_t InputHeight,
-    size_t InputWidth,
-    size_t OutputWidth,
-    float InterpolationHeight,
-    const float* InterpolationWidth,
-    const float* Input,
-    float* Output
-    );
+    MLASCALL
+    MlasNchwcUpsampleLinear(
+        size_t InputHeight,
+        size_t InputWidth,
+        size_t OutputWidth,
+        float InterpolationHeight,
+        const float* InterpolationWidth,
+        const float* Input,
+        float* Output);
 
 //
 // Linear quantization routines.
 //
 
-template<typename OutputType>
+template <typename OutputType>
 void
-MLASCALL
-MlasQuantizeLinear(
-    const float* Input,
-    OutputType* Output,
-    size_t N,
-    float Scale,
-    OutputType ZeroPoint
-    );
-
-/**
- * @brief Requantize a block of the intermediate buffer to the output buffer,
- *        optionally adding the supplied bias
- *
- * @param Input                     Input matrix
- * @param InputLeadingDimension     Input matrix leading dimension
- * @param Output                    Output matrix
- * @param OutputLeadingDimension    Output matrix leading dimension
- * @param Bias                      Optional bias vector, to be added
-                                    to the input before quantization
- * @param Scale                     Quantization scale
- * @param PerColumnScale            true if scale is per-column
- * @param ZeroPoint                 quantization zero point value
- * @param StartM
- * @param StartN
- * @param CountM
- * @param CountN
- * @return
-*/
-template<typename OutputType>
-void
-MLASCALL
-MlasRequantizeOutput(
-    const int32_t* Input,
-    size_t InputLeadingDimension,
-    OutputType* Output,
-    size_t OutputLeadingDimension,
-    const int32_t* Bias,
-    const float* Scale,
-    bool PerColumnScale,
-    OutputType ZeroPoint,
-    size_t StartM,
-    size_t StartN,
-    size_t CountM,
-    size_t CountN
-    );
-
-class MLAS_QGEMM_REQUANT_OUTPUT_PROCESSOR : public MLAS_QGEMM_OUTPUT_PROCESSOR
-{
-   public:
-    MLAS_QGEMM_REQUANT_OUTPUT_PROCESSOR(
-        void* Output,
-        size_t OutputLeadingDimension,
-        const int32_t* Bias,
-        const float* Scale,
-        bool PerColumnScale,
-        int32_t ZeroPoint,
-        bool OutputIsSigned)
-        : Output_(Output),
-          OutputLeadingDimension_(OutputLeadingDimension),
-          Bias_(Bias),
-          Scale_(Scale),
-          PerColumnScale_(PerColumnScale),
-          ZeroPoint_(ZeroPoint),
-          OutputIsSigned_(OutputIsSigned)
-    {
-    }
-
-    void Process(const int32_t* C,
-                 size_t StartM,
-                 size_t StartN,
-                 size_t CountM,
-                 size_t CountN,
-                 size_t ldc) const override
-    {
-        if(OutputIsSigned_){
-            MlasRequantizeOutput(C, ldc, reinterpret_cast<int8_t*>(Output_), OutputLeadingDimension_,
-                                 Bias_, Scale_, PerColumnScale_, static_cast<int8_t>(ZeroPoint_),
-                                 StartM, StartN, CountM, CountN);
-        } else {
-            MlasRequantizeOutput(C, ldc, reinterpret_cast<uint8_t*>(Output_), OutputLeadingDimension_,
-                                 Bias_, Scale_, PerColumnScale_, static_cast<uint8_t>(ZeroPoint_),
-                                 StartM, StartN, CountM, CountN);
-        }
-    }
-
-
-   private:
-    void* Output_;
-    size_t OutputLeadingDimension_;
-    const int32_t* Bias_;
-    const float* Scale_;
-    bool PerColumnScale_;
-    int32_t ZeroPoint_;
-    bool OutputIsSigned_;
-};
-
+    MLASCALL
+    MlasQuantizeLinear(
+        const float* Input,
+        OutputType* Output,
+        size_t N,
+        float Scale,
+        OutputType ZeroPoint);
 
 void
-MLASCALL
-MlasFindMinMaxElement(
-    const float* Input,
-    float* Min,
-    float* Max,
-    size_t N
-    );
+    MLASCALL
+    MlasFindMinMaxElement(
+        const float* Input,
+        float* Min,
+        float* Max,
+        size_t N);
 
 size_t
-MLASCALL
-MlasQLinearSafePaddingElementCount(
-    size_t ElementSize,
-    size_t ElementCount
-    );
-
-template<typename T8Bits>
-void
-MLASCALL
-MlasQLinearGlobalAveragePoolNchw(
-    const T8Bits* Input,
-    float ScaleInput,
-    int32_t ZeroPointInput,
-    T8Bits* Output,
-    float ScaleOutput,
-    int32_t ZeroPointOutput,
-    size_t Channels,
-    size_t ImageSize,
-    int32_t* AccumulateBuffer
-    );
+    MLASCALL
+    MlasQLinearSafePaddingElementCount(
+        size_t ElementSize,
+        size_t ElementCount);
 
 template <typename T8Bits>
 void
-MLASCALL
-MlasQLinearGlobalAveragePoolNhwc(
-    const T8Bits* Input,
-    float ScaleInput,
-    int32_t ZeroPointInput,
-    T8Bits* Output,
-    float ScaleOutput,
-    int32_t ZeroPointOutput,
-    size_t Batch,
-    size_t ImageSize,
-    size_t Stride,
-    size_t Channels,
-    int32_t* AccumulateBuffer,
-    const T8Bits* ZeroBuffer
-    );
+    MLASCALL
+    MlasQLinearGlobalAveragePoolNchw(
+        const T8Bits* Input,
+        float ScaleInput,
+        int32_t ZeroPointInput,
+        T8Bits* Output,
+        float ScaleOutput,
+        int32_t ZeroPointOutput,
+        size_t Channels,
+        size_t ImageSize,
+        int32_t* AccumulateBuffer);
+
+template <typename T8Bits>
+void
+    MLASCALL
+    MlasQLinearGlobalAveragePoolNhwc(
+        const T8Bits* Input,
+        float ScaleInput,
+        int32_t ZeroPointInput,
+        T8Bits* Output,
+        float ScaleOutput,
+        int32_t ZeroPointOutput,
+        size_t Batch,
+        size_t ImageSize,
+        size_t Stride,
+        size_t Channels,
+        int32_t* AccumulateBuffer,
+        const T8Bits* ZeroBuffer);
 
 //
 // InputA is of size N,
 // Input B is of size 1 if IsScalarB == true, otherwise it is of size N
 //
-template<typename DataType>
+template <typename DataType>
 void
-MLASCALL
-MlasQLinearAdd(
-    const DataType* InputA,
-    float ScaleA,
-    int32_t ZeroPointA,
-    const DataType* InputB,
-    float ScaleB,
-    int32_t ZeroPointB,
-    float ScaleC,
-    int32_t ZeroPointC,
-    DataType* OutputC,
-    size_t N,
-    bool IsScalarB
-    );
+    MLASCALL
+    MlasQLinearAdd(
+        const DataType* InputA,
+        float ScaleA,
+        int32_t ZeroPointA,
+        const DataType* InputB,
+        float ScaleB,
+        int32_t ZeroPointB,
+        float ScaleC,
+        int32_t ZeroPointC,
+        DataType* OutputC,
+        size_t N,
+        bool IsScalarB);
 
-template<typename DataType>
+template <typename DataType>
 void
-MLASCALL
-MlasQLinearMul(
-    const DataType* InputA,
-    float ScaleA,
-    int32_t ZeroPointA,
-    const DataType* InputB,
-    float ScaleB,
-    int32_t ZeroPointB,
-    float ScaleC,
-    int32_t ZeroPointC,
-    DataType* OutputC,
-    size_t N,
-    bool IsScalarB
-    );
+    MLASCALL
+    MlasQLinearMul(
+        const DataType* InputA,
+        float ScaleA,
+        int32_t ZeroPointA,
+        const DataType* InputB,
+        float ScaleB,
+        int32_t ZeroPointB,
+        float ScaleC,
+        int32_t ZeroPointC,
+        DataType* OutputC,
+        size_t N,
+        bool IsScalarB);
