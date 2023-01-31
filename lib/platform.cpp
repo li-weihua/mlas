@@ -177,7 +177,6 @@ Return Value:
 
 #if defined(MLAS_TARGET_AMD64)
 
-  this->TransposePackB16x4Routine = MlasSgemmTransposePackB16x4Sse;
   this->ConvNchwFloatKernel = MlasConvNchwFloatKernelSse;
   this->NchwcBlockSize = 8;
   this->PreferredBufferAlignment = MLAS_DEFAULT_PREFERRED_BUFFER_ALIGNMENT;
@@ -191,18 +190,6 @@ Return Value:
   __cpuid((int*)Cpuid1, 1);
 #else
   __cpuid(1, Cpuid1[0], Cpuid1[1], Cpuid1[2], Cpuid1[3]);
-#endif
-
-#if defined(_MSC_VER)
-
-  //
-  // Check if the processor supports SSE 4.1 instructions.
-  //
-
-  if ((Cpuid1[2] & 0x80000) != 0) {
-    this->GemmU8S8Dispatch = &MlasGemmU8S8DispatchSse41;
-  }
-
 #endif
 
   //
@@ -223,7 +210,6 @@ Return Value:
 
       this->KernelM1Routine = MlasSgemmKernelM1Avx;
       this->KernelM1TransposeBRoutine = MlasSgemmKernelM1TransposeBAvx;
-      this->TransposePackB16x4Routine = MlasSgemmTransposePackB16x4Avx;
       this->ConvNchwFloatKernel = MlasConvNchwFloatKernelAvx;
 
       //
