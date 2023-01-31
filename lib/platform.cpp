@@ -178,6 +178,7 @@ Return Value:
 #if defined(MLAS_TARGET_AMD64)
 
   this->TransposePackB16x4Routine = MlasSgemmTransposePackB16x4Sse;
+  this->ConvNchwFloatKernel = MlasConvNchwFloatKernelSse;
   this->NchwcBlockSize = 8;
   this->PreferredBufferAlignment = MLAS_DEFAULT_PREFERRED_BUFFER_ALIGNMENT;
 
@@ -223,6 +224,7 @@ Return Value:
       this->KernelM1Routine = MlasSgemmKernelM1Avx;
       this->KernelM1TransposeBRoutine = MlasSgemmKernelM1TransposeBAvx;
       this->TransposePackB16x4Routine = MlasSgemmTransposePackB16x4Avx;
+      this->ConvNchwFloatKernel = MlasConvNchwFloatKernelAvx;
 
       //
       // Check if the processor supports AVX2/FMA3 features.
@@ -237,6 +239,7 @@ Return Value:
 
       if (((Cpuid1[2] & 0x1000) != 0) && ((Cpuid7[1] & 0x20) != 0)) {
         this->GemmFloatKernel = MlasGemmFloatKernelFma3;
+        this->ConvNchwFloatKernel = MlasConvNchwFloatKernelFma3;
 
         //
         // Check if the processor supports Hybrid core architecture.
@@ -245,37 +248,6 @@ Return Value:
         if ((Cpuid7[3] & 0x8000) != 0) {
           this->MaximumThreadCount = MLAS_MAXIMUM_THREAD_COUNT * 4;
         }
-
-        //
-        // Check if the processor supports AVXVNNI features.
-        //
-
-        unsigned Cpuid7_1[4];
-#if defined(_WIN32)
-        __cpuidex((int*)Cpuid7_1, 7, 1);
-#else
-        __cpuid_count(7, 1, Cpuid7_1[0], Cpuid7_1[1], Cpuid7_1[2], Cpuid7_1[3]);
-#endif
-
-        if ((Cpuid7_1[0] & 0x10) != 0) {
-        }
-
-#if !defined(ORT_MINIMAL_BUILD)
-
-#ifdef MLAS_AMX_SUPPORTED
-        //
-        // Check if the processor supports AMX-TILE and AMX-INT8
-        // features.
-        //
-        if ((Cpuid7[3] & 0b1 << 24) != 0 && (Cpuid7[3] & 0b1 << 25) != 0) {
-          if (MlasInitAMX()) {
-            this->GemmU8U8Dispatch = &MlasGemmU8S8DispatchAmx;
-            this->GemmU8S8Dispatch = &MlasGemmU8S8DispatchAmx;
-          }
-        }
-#endif  // MLAS_AMX_SUPPORTED
-
-#endif  // ORT_MINIMAL_BUILD
       }
 
 #endif  // MLAS_TARGET_AMD64
@@ -283,36 +255,6 @@ Return Value:
   }
 
 #endif  // MLAS_TARGET_AMD64_IX86
-
-#if defined(MLAS_TARGET_ARM64)
-
-  this->GemmU8X8Dispatch = &MlasGemmU8X8DispatchNeon;
-  this->SymmQgemmDispatch = &MlasSymmQgemmS8DispatchNeon;
-  this->ConvSymU8S8Dispatch = &MlasConvSymU8DispatchNeon;
-  this->ConvSymS8S8Dispatch = &MlasConvSymS8DispatchNeon;
-
-  //
-  // Check if the processor supports ASIMD dot product instructions.
-  //
-
-  bool HasDotProductInstructions;
-
-#if defined(_WIN32)
-  HasDotProductInstructions = (IsProcessorFeaturePresent(PF_ARM_V82_DP_INSTRUCTIONS_AVAILABLE) != 0);
-#elif defined(__linux__)
-  HasDotProductInstructions = MLAS_CPUIDINFO::GetCPUIDInfo().HasArmNeonDot();
-#else
-  HasDotProductInstructions = false;
-#endif
-
-  if (HasDotProductInstructions) {
-    this->GemmU8X8Dispatch = &MlasGemmU8X8DispatchUdot;
-    this->SymmQgemmDispatch = &MlasSymmQgemmS8DispatchSdot;
-    this->ConvSymU8S8Dispatch = &MlasConvSymU8DispatchDot;
-    this->ConvSymS8S8Dispatch = &MlasConvSymS8DispatchDot;
-  }
-
-#endif  // MLAS_TARGET_ARM64
 }
 
 size_t
