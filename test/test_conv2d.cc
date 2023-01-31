@@ -14,11 +14,13 @@ int main(int argc, char* argv[]) {
 
   size_t buffer_size = conv2d.GetBufferSize();
 
-  void* buffer = aligned_alloc(32, sizeof(float) * buffer_size);
+  // void* buffer = aligned_alloc(32, sizeof(float) * buffer_size);
+  void* buffer = malloc(sizeof(float) * buffer_size);
 
   conv2d.SetBuffer(buffer);
 
-  float* output = (float*)aligned_alloc(32, sizeof(float) * 1 * 48 * 1 * 40);
+  // float* output = (float*)aligned_alloc(32, sizeof(float) * 1 * 48 * 1 * 40);
+  float* output = (float*)malloc(sizeof(float) * 1 * 48 * 1 * 40);
 
   std::string path(argv[1]);
 
@@ -31,9 +33,11 @@ int main(int argc, char* argv[]) {
   // conv2d.DoForward(output, input, kernel, bias);
   conv2d.DoForward(output, input.data(), weight.data(), bias.data());
 
-  float r = get_max_diff(output, ref_output.data(), 48 * 40);
+  auto r = get_min_max(ref_output.data(), 48 * 40);
+  std::cout << "range: " << r.first << ", " << r.second << std::endl;
 
-  std::cout << "max abs diff: " << r << std::endl;
+  float diff = get_max_diff(output, ref_output.data(), 48 * 40);
+  std::cout << "max abs diff: " << diff << std::endl;
 
   // free buffer
   free(buffer);

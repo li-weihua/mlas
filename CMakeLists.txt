@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(MLAS ASM C CXX)
+project(MLAS CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 
 if (NOT CMAKE_BUILD_TYPE)
   message(STATUS "Build type not set - using RelWithDebInfo")
-  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose build type: Debug Release RelWithDebInfo MinSizeRel." FORCE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose build type: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -24,6 +24,8 @@ set(mlas_common_srcs
 # only support x86_64 (x64) platform
 
 if(UNIX)
+    enable_language(ASM)
+
     set(mlas_platform_srcs_sse2
       ${MLAS_SRC_DIR}/x86_64/SgemmKernelSse2.S
       ${MLAS_SRC_DIR}/x86_64/SconvKernelSse2.S
@@ -52,6 +54,8 @@ if(UNIX)
 endif(UNIX)
 
 if(WIN32)
+    enable_language(ASM_MASM)
+
     set(mlas_platform_srcs
       ${MLAS_SRC_DIR}/amd64/SgemmKernelSse2.asm
       ${MLAS_SRC_DIR}/amd64/SgemmKernelAvx.asm
@@ -72,9 +76,15 @@ add_library(mlas SHARED ${mlas_common_srcs} ${mlas_platform_srcs})
 target_include_directories(mlas PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/inc ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 target_compile_definitions(mlas PUBLIC BUILD_MLAS_NO_ONNXRUNTIME)
 
+if (WIN32)
+  target_compile_options(mlas_static PRIVATE "/wd6385" "/wd4127")
+  target_compile_options(mlas PRIVATE "/wd6385" "/wd4127")
+endif()
+
 # test
 add_executable(test_gemm test/test_sgemm.cc)
-target_link_libraries(test_gemm PRIVATE mlas)
+target_link_libraries(test_gemm PRIVATE mlas_static)
 
 add_executable(test_conv2d test/test_conv2d.cc)
-target_link_libraries(test_conv2d PRIVATE mlas)
+target_link_libraries(test_conv2d PRIVATE mlas_static)
+
